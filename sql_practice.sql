@@ -185,5 +185,60 @@ delete from emp_practice where salary < 28000;
 -- Q22: Final check, employees per department
 select department, count(*) from emp_practice group by department;
 
--- Q23: Check the table
+-- Q23: Check the final state of emp_practice
 select * from emp_practice order by id;
+
+-- =====================================================
+-- SECTION 6: SUBQUERIES, DUPLICATES AND NULL HANDLING
+-- =====================================================
+drop table if exists dup_demo;
+create table dup_demo (id int, name varchar(50), city varchar(50));
+insert into dup_demo values
+(1, 'Amit', 'Mumbai'),
+(2, 'Neha', 'Pune'),
+(3, 'Amit', 'Mumbai'),
+(4, 'Rohan', 'Thane'),
+(5, 'Neha', 'Pune'),
+(6, 'Neha', 'Pune');
+
+-- Q24: Employees earning more than the average salary (subquery)
+select name, salary from employees
+where salary > (select avg(salary) from employees);
+
+-- Q25: Employee with the minimum salary (subquery)
+select name, salary from employees
+where salary = (select min(salary) from employees);
+
+-- Q26: Second highest salary
+select max(salary) from employees
+where salary < (select max(salary) from employees);
+
+-- Q27: Employees earning more than Sneha (value comes from the subquery)
+select name, salary from employees
+where salary > (select salary from employees where name = 'Sneha');
+
+-- Q28: Staff whose department is located in Pune (IN with subquery)
+select name from staff
+where dept_id in (select dept_id from departments where location = 'Pune');
+
+-- Q29: Find duplicate records (same name and city)
+select name, city, count(*) as times
+from dup_demo
+group by name, city
+having count(*) > 1;
+
+-- Q30: Unique records only (DISTINCT)
+select distinct name, city from dup_demo;
+
+-- Q31: Delete duplicates, keep the smallest id of each group
+-- (run only once. To practise again, re-run the dup_demo setup above)
+delete from dup_demo
+where id not in (select min(id) from dup_demo group by name, city);
+
+-- Q32: Replace NULL department with a default value (COALESCE)
+select s.name, coalesce(d.dept_name, 'No Department') as department
+from staff s
+left join departments d on s.dept_id = d.dept_id;
+
+-- Q33: Total rows vs rows that have a department (COUNT(*) vs COUNT(column))
+select count(*), count(dept_id) from staff;
